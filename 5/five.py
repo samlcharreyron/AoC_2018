@@ -2,8 +2,6 @@ import sys
 from collections import defaultdict
 
 def react(reacted):
-    stop = False
-
     stack = []
 
     for c in reacted:
