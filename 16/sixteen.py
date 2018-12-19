@@ -1,9 +1,10 @@
 import sys
 import re
-from itertools import islice
+import copy
+from collections import defaultdict
 
 OPCODES = ['addr', 'addi', 'mulr', 'muli', 'banr', 'bani', 'borr', 'bori',
-        'setr', 'seto', 'gtir', 'gtri', 'gtrr', 'eqir', 'eqri', 'eqrr']
+        'setr', 'seti', 'gtir', 'gtri', 'gtrr', 'eqir', 'eqri', 'eqrr']
 
 def perform_op(op, a, b, reg):
     if op == 'addr':
@@ -56,6 +57,7 @@ def perform_op(op, a, b, reg):
 
 def p1(lines):
     samples = 0
+    d_opcode = defaultdict(set)
     for line in lines:
         if line == '':
             break
@@ -68,12 +70,15 @@ def p1(lines):
 
         candidates = []
         for op in OPCODES:
-            reg = reg_before
+            reg = copy.copy(reg_before)
             reg[c] = perform_op(op, a, b, reg_before)
             if reg == reg_after:
                 candidates.append(op)
         if len(candidates) > 2:
             samples += 1
+        for cand in candidates:
+            d_opcode[cand].add(op_code)
+    print d_opcode
     return samples
 
 if __name__ == '__main__':
