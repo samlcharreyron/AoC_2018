@@ -58,6 +58,7 @@ def perform_op(op, a, b, reg):
 def p1(lines):
     samples = 0
     d_opcode = defaultdict(set)
+    d_cand = defaultdict(set)
     for line in lines:
         if line == '':
             break
@@ -77,11 +78,41 @@ def p1(lines):
         if len(candidates) > 2:
             samples += 1
         for cand in candidates:
-            d_opcode[cand].add(op_code)
-    print d_opcode
-    return samples
+            #d_opcode[cand].add(op_code)
+            d_cand[op_code].add(cand)
+
+    print samples
+
+    finished = set()
+    while len(finished) < len(OPCODES):
+        to_remove = []
+        for opcode, cands in d_cand.iteritems():
+            if len(cands) < 2 and (opcode not in finished): 
+                cand = cands.pop()
+                cands.add(cand)
+                to_remove.append((cand, opcode))
+        for cand, opcode in to_remove:
+            print 'removing %d' % opcode
+            finished.add(cand)
+            for o, cands in d_cand.iteritems():
+                if cand in cands:
+                    if o!= opcode:
+                        cands.remove(cand)
+                    else:
+                        d_cand[opcode] = cand
+    return d_cand
+
+def p2(lines, d_cand):
+    reg = [0]*4
+    for line in lines:
+        opcode, a, b, c = [int(c) for c in re.findall('\d+', line)]
+        op = d_cand[opcode]
+        reg[c] = perform_op(op, a, b, reg) 
+
+    print 'contents of reg 0: %d' % reg[0]
 
 if __name__ == '__main__':
     with open(sys.argv[1]) as f: 
-        lines = f.read().split('\n\n')
-        print p1(lines)
+        part1, part2 = f.read().split(';')
+        d_cand = p1(part1.split('\n\n'))
+        p2(part2.splitlines()[1:], d_cand)
